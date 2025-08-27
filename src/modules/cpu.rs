@@ -236,12 +236,18 @@ impl CPU {
                 }
             }
             /* Unknown */
-            (_, _, _, _) => unimplemented!("Unknown Instruction: {}", instruction),
+            (_, _, _, _) => unimplemented!("Unknown Opcode: {}", opcode),
         }
 
         /* If True, then Program Counter += 2*/
         if next_instruction {
             self.pc += 2;
         }
+    }
+    pub fn cycle(&mut self) {
+        /* Fetch */
+        let opcode = self.fetch_opcode();
+        /* Decode and Execute */
+        self.decode_execute_opcode(opcode);
     }
 }
