@@ -15,10 +15,10 @@ pub struct CPU {
 }
 
 impl CPU {
-    pub fn new() -> Self {
+    pub fn init() -> Self {
         /* Initialize Emulator */
         CPU {
-            ram: Memory::new(),
+            ram: Memory::init(),
             v: [0; NUM_REGS],
             i: 0,
             stack: [0; NUM_REGS],
@@ -29,23 +29,30 @@ impl CPU {
         }
     }
     fn stack_push(&mut self, value: u16) {
+        /* Add [value] to the location of Stack Pointer on Stack and increment SP */
         self.stack[self.sp as usize] = value;
         self.sp += 1;
     }
     fn stack_pop(&mut self) -> u16 {
+        /* Removes Last Added [value] from Stack  */
         self.sp -= 1;
         self.stack[self.sp as usize]
     }
-    pub fn fetch(&self) -> u16 {
-        todo!()
+    pub fn fetch_opcode(&self) -> u16 {
+        /* Two Bytes = Opcode */
+        let high_byte = self.ram.read_ram(self.pc as usize);
+        let low_byte = self.ram.read_ram((self.pc + 1) as usize);
+
+        /*Return Opcode */
+        ((high_byte as u16)) << 8 | (low_byte as u16)
     }
-    pub fn decode_execute(&mut self, instruction: u16) {
+    pub fn decode_execute_opcode(&mut self, opcode: u16) {
         let (nnn, x, y, n, nn) = (
-            (instruction & 0xF000) >> 12, /*  F: Top Nibble (Instruction Family) */
-            (instruction & 0x0F00) >> 8,  /*  X: Second Nibble (Vx Register) */
-            (instruction & 0x00F0) >> 4,  /*  Y: Third Nibble (Vy Register) */
-            instruction & 0x000F,         /*  N: Lowest Nibble */
-            instruction & 0xFF,           /* NN: (KK, NN, Byte) Lowest Byte */
+            (opcode & 0xF000) >> 12, /*  F: Top Nibble (Instruction Family) */
+            (opcode & 0x0F00) >> 8,  /*  X: Second Nibble (Vx Register) */
+            (opcode & 0x00F0) >> 4,  /*  Y: Third Nibble (Vy Register) */
+            opcode & 0x000F,         /*  N: Lowest Nibble */
+            opcode & 0xFF,           /* NN: (KK, NN, Byte) Lowest Byte */
         );
 
         /* Default true, set false if when Program Counter is set (PC = Address) */
